@@ -71,4 +71,4 @@ EduWe-Learning-Platform/
 │   │   ├── eduwe_logo.png
 │   │   └── (other assets)
 │
-└── venv/   (optional - should NOT be pushed to GitHub)
+└── venv/   
