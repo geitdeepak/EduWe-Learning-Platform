@@ -45,3 +45,30 @@ EduWe is a modern **AI-powered learning platform** that helps learners explore t
 ---
 
 ## 📂 Project Structure
+
+EduWe-Learning-Platform/
+│
+├── app.py
+├── requirements.txt
+├── README.md
+│
+├── templates/
+│   ├── index.html
+│   ├── saved.html
+│   ├── learning-paths.html
+│   ├── about-us.html
+│   ├── contact.html
+│   ├── YTChannel.html
+│
+├── static/
+│   ├── css/
+│   │   └── style.css
+│   │
+│   ├── js/
+│   │   └── (optional future scripts)
+│   │
+│   ├── images/
+│   │   ├── eduwe_logo.png
+│   │   └── (other assets)
+│
+└── venv/   (optional - should NOT be pushed to GitHub)
