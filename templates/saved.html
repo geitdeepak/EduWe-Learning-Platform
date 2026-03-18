@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>My Learning - EduWe</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow">
+<div class="container">
+
+<a class="navbar-brand d-flex align-items-center" href="/">
+<img src="{{ url_for('static', filename='images/eduwe_logo.png') }}" class="logo">
+</a>
+
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+<span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="navbarMenu">
+
+<span class="navbar-text text-info mx-auto navbar-title">
+📚 My Bookmarked Learning
+</span>
+
+<ul class="navbar-nav ms-auto">
+<li class="nav-item">
+<a class="nav-link" href="/">
+<i class="fa fa-home"></i> Home
+</a>
+</li>
+</ul>
+
+</div>
+</div>
+</nav>
+
+
+<div class="container mt-4">
+
+<!-- FILTER -->
+<div class="category-filter text-center mb-4">
+
+<button class="filter-btn active" onclick="filterVideos('all', event)">All</button>
+<button class="filter-btn" onclick="filterVideos('Azure', event)">Azure</button>
+<button class="filter-btn" onclick="filterVideos('AWS', event)">AWS</button>
+<button class="filter-btn" onclick="filterVideos('AI/ML', event)">AI/ML</button>
+<button class="filter-btn" onclick="filterVideos('Python', event)">Python</button>
+<button class="filter-btn" onclick="filterVideos('IoT', event)">IoT</button>
+
+</div>
+
+<div class="row" id="savedVideosContainer"></div>
+
+</div>
+
+
+<!-- VIDEO MODAL -->
+
+<div class="modal fade" id="videoModal">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-body">
+
+<button class="btn-close" data-bs-dismiss="modal"></button>
+
+<div class="ratio ratio-16x9">
+<div id="modalVideo"></div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- FOOTER -->
+
+<footer class="genz-footer">
+
+<div class="container">
+
+<div class="row gy-4">
+
+<div class="col-lg-4">
+
+<h3 class="footer-brand">EduWe</h3>
+
+<p class="footer-desc">
+EduWe helps learners explore modern technologies through curated
+tutorials in Cloud, AI/ML, DSA, Python, IoT and software development.
+</p>
+
+<div class="footer-social">
+
+<a href="#"><i class="fab fa-youtube"></i></a>
+<a href="#"><i class="fab fa-linkedin"></i></a>
+<a href="#"><i class="fab fa-github"></i></a>
+<a href="#"><i class="fab fa-twitter"></i></a>
+
+</div>
+
+</div>
+
+
+<div class="col-lg-2">
+
+<h6 class="footer-title">Explore</h6>
+
+<ul>
+<li><a href="#">Azure</a></li>
+<li><a href="#">AWS</a></li>
+<li><a href="#">AI/ML</a></li>
+<li><a href="#">Java</a></li>
+<li><a href="#">IoT</a></li>
+<li><a href="#">DSA</a></li>
+</ul>
+
+</div>
+
+
+<div class="col-lg-2">
+
+<h6 class="footer-title">Platform</h6>
+
+<ul>
+<li><a href="#">Courses</a></li>
+<li><a href="/learning-paths">Learning Paths</a></li>
+<li><a href="#">Community</a></li>
+<li><a href="/contact">Contact</a></li>
+</ul>
+
+</div>
+
+
+<div class="col-lg-4">
+
+<h6 class="footer-title">Stay Updated 🚀</h6>
+
+<p class="newsletter-text">
+Get latest tutorials and learning resources.
+</p>
+
+<div class="newsletter-box">
+
+<input type="email" id="newsletterEmail" placeholder="Enter your email">
+
+<button onclick="subscribeUser()">Subscribe</button>
+
+</div>
+
+</div>
+
+</div>
+
+<hr class="footer-line">
+
+<div class="footer-bottom">
+
+<p>© 2026 EduWe • Built for Future Learners</p>
+
+</div>
+
+</div>
+
+</footer>
+
+
+<!-- YOUTUBE API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+<script>
+
+let player;
+let ytReady = false;
+let currentVideoId = "";
+let progressInterval;
+
+function onYouTubeIframeAPIReady(){
+ytReady = true;
+}
+
+// OPEN VIDEO WITH RESUME
+function openVideo(videoUrl){
+
+let videoId = videoUrl.split("/").pop();
+currentVideoId = videoId;
+
+let progressData = JSON.parse(localStorage.getItem("videoProgress")) || {};
+let startTime = progressData[videoId] || 0;
+
+let modal = new bootstrap.Modal(document.getElementById("videoModal"));
+modal.show();
+
+setTimeout(() => {
+
+if(!ytReady) return;
+
+if(player){
+player.destroy();
+}
+
+player = new YT.Player('modalVideo', {
+videoId: videoId,
+playerVars: {
+autoplay: 1,
+start: Math.floor(startTime)
+},
+events: {
+'onReady': onPlayerReady
+}
+});
+
+}, 500);
+
+}
+
+// TRACK PROGRESS
+function onPlayerReady(){
+
+progressInterval = setInterval(() => {
+
+if(player && player.getCurrentTime && player.getDuration){
+
+let current = player.getCurrentTime();
+let duration = player.getDuration();
+
+let percent = (current / duration) * 100;
+
+let progress = JSON.parse(localStorage.getItem("videoProgress")) || {};
+progress[currentVideoId] = percent;
+
+localStorage.setItem("videoProgress", JSON.stringify(progress));
+
+updateProgressBar(currentVideoId, percent);
+
+}
+
+}, 2000);
+
+}
+
+// UPDATE BAR
+function updateProgressBar(videoId, percent){
+
+let bar = document.getElementById("progress-" + videoId);
+
+if(bar){
+bar.style.width = percent + "%";
+}
+
+}
+
+// LOAD SAVED PROGRESS
+document.addEventListener("DOMContentLoaded", () => {
+
+let progress = JSON.parse(localStorage.getItem("videoProgress")) || {};
+
+Object.keys(progress).forEach(videoId => {
+updateProgressBar(videoId, progress[videoId]);
+});
+
+});
+
+</script>
+
+
+<!-- LOAD BOOKMARKS -->
+
+<script>
+
+let savedVideos = JSON.parse(localStorage.getItem("savedVideos")) || [];
+let container = document.getElementById("savedVideosContainer");
+
+function detectCategory(title){
+
+title = title.toLowerCase();
+
+if(title.includes("azure")) return "Azure";
+if(title.includes("aws")) return "AWS";
+if(title.includes("ai")) return "AI/ML";
+if(title.includes("python")) return "Python";
+if(title.includes("iot")) return "IoT";
+
+return "Other";
+}
+
+if(savedVideos.length === 0){
+
+container.innerHTML = `
+<div class="text-center mt-5">
+<h4>No videos saved yet</h4>
+<p>Go to Home and bookmark some tutorials.</p>
+</div>
+`;
+
+}
+
+savedVideos.forEach(video => {
+
+let category = detectCategory(video.title);
+let videoId = video.link.split("/").pop();
+
+container.innerHTML += `
+
+<div class="col-lg-4 col-md-6 mb-4 video-item" data-category="${category}">
+
+<div class="card video-card">
+
+<div class="video-thumbnail"
+onclick="openVideo('${video.link}')">
+
+<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg">
+
+<div class="play-button">
+<i class="fa fa-play"></i>
+</div>
+
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-container">
+<div class="progress-bar-custom" id="progress-${videoId}"></div>
+</div>
+
+<div class="card-body">
+
+<h5 class="video-title">${video.title}</h5>
+
+<div class="video-actions">
+
+<span class="badge category-badge">${category}</span>
+
+<button class="btn btn-sm btn-danger"
+onclick="removeBookmark('${video.title}')">
+<i class="fa fa-trash"></i>
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+</script>
+
+
+<!-- REMOVE BOOKMARK -->
+
+<script>
+
+function removeBookmark(title){
+
+let savedVideos = JSON.parse(localStorage.getItem("savedVideos")) || [];
+
+savedVideos = savedVideos.filter(v => v.title !== title);
+
+localStorage.setItem("savedVideos", JSON.stringify(savedVideos));
+
+location.reload();
+
+}
+
+</script>
+
+
+<!-- FILTER -->
+
+<script>
+
+function filterVideos(category, event){
+
+let videos = document.querySelectorAll(".video-item");
+let buttons = document.querySelectorAll(".filter-btn");
+
+videos.forEach(video => {
+
+let videoCategory = video.getAttribute("data-category");
+
+video.style.display = (category === "all" || videoCategory === category) ? "block" : "none";
+
+});
+
+buttons.forEach(btn => btn.classList.remove("active"));
+event.target.classList.add("active");
+
+}
+
+</script>
+<script>
+
+function subscribeUser(){
+
+let email = document.getElementById("newsletterEmail").value.trim();
+
+if(email === ""){
+alert("Please enter email");
+return;
+}
+
+// simple email validation
+if(!email.includes("@") || !email.includes(".")){
+alert("Enter valid email");
+return;
+}
+
+// store emails
+let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
+
+if(subscribers.includes(email)){
+alert("Already subscribed");
+return;
+}
+
+subscribers.push(email);
+
+localStorage.setItem("subscribers", JSON.stringify(subscribers));
+
+alert("🎉 Subscribed successfully!");
+
+document.getElementById("newsletterEmail").value = "";
+
+}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>EduWe Learning Hub</title>
+
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet"
+href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+<style>
+.progress-container{
+    background:#2a2a2a;
+    height:5px;
+    border-radius:5px;
+    overflow:hidden;
+    margin-top:5px;
+}
+
+.progress-bar-custom{
+    height:5px;
+    background:#ff0000;
+    width:0%;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+
+<nav class="navbar navbar-expand-lg navbar-dark shadow">
+<div class="container">
+
+<a class="navbar-brand d-flex align-items-center">
+<img src="{{ url_for('static', filename='images/eduwe_logo.png') }}" class="logo">
+</a>
+
+<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+<span class="navbar-toggler-icon"></span>
+</button>
+
+<div class="collapse navbar-collapse" id="navbarMenu">
+
+<ul class="navbar-nav me-auto"> 
+<li class="nav-item"><a class="nav-link" href="/">Home</a></li> 
+<li class="nav-item"><a class="nav-link" href="/about-us">About Us</a></li>
+<li class="nav-item"><a class="nav-link" href="/YTChannel">Our YT Channel</a></li>
+<li class="nav-item">
+<a class="nav-link" href="/learning-paths">Learning Paths</a>
+</li>
+<li class="nav-item">
+<a class="nav-link text-warning" href="/my-learning">
+<i class="fa fa-bookmark"></i> My Learning
+</a>
+</li> 
+<li class="nav-item"><a class="nav-link" href="/contact">Contact Us</a></li>
+</ul>
+
+<form class="d-flex">
+<input class="form-control me-2 search-box" type="search" placeholder="Search tutorials"
+id="videoSearch" onkeyup="searchVideos()">
+<button class="btn btn-primary">Search</button>
+</form>
+
+</div>
+</div>
+</nav>
+
+
+<!-- PAGE TITLE -->
+
+<div class="container mt-4">
+
+<h2 class="page-title text-center mb-4">
+🚀 Explore Technology Learning Videos
+</h2>
+
+
+<!-- CONTINUE WATCHING -->
+
+<div class="mb-5" id="continueSection">
+
+<div class="d-flex justify-content-between align-items-center">
+<h4>⏯ Continue Watching</h4> 
+
+<button class="btn btn-sm btn-outline-light"
+onclick="closeContinueWatching()">✖</button>
+</div>
+
+<div class="row" id="continueWatching"></div>
+
+</div>
+
+<!-- ADD THIS BELOW CONTINUE WATCHING SECTION 
+
+<div class="mb-5">
+<h4>🎯 Recommended for You</h4>
+<div class="row" id="recommendedVideos"></div>
+</div> -->
+
+<!-- CATEGORY FILTER -->
+
+<div class="category-filter text-center mb-4">
+<button class="filter-btn" onclick="filterVideos('all')">All</button>
+<button class="filter-btn" onclick="filterVideos('Azure')">Azure</button>
+<button class="filter-btn" onclick="filterVideos('AWS')">AWS</button>
+<button class="filter-btn" onclick="filterVideos('AI/ML')">AI/ML</button>
+<button class="filter-btn" onclick="filterVideos('Java')">Java</button>
+<button class="filter-btn" onclick="filterVideos('IoT')">IoT</button>
+<button class="filter-btn" onclick="filterVideos('Python')">Python</button>
+</div>
+
+
+<div class="row">
+
+{% for video in videos %}
+
+<div class="col-lg-4 col-md-6 mb-4 video-item" data-category="{{ video.category }}">
+
+<div class="card video-card">
+
+<div class="video-thumbnail"
+onclick="openVideo('{{ video.video_id }}','{{ video.category }}')"
+style="cursor:pointer">
+
+<img src="https://img.youtube.com/vi/{{ video.video_id }}/hqdefault.jpg">
+
+<div class="play-button">
+<i class="fa fa-play"></i>
+</div>
+
+</div>
+
+<!-- PROGRESS BAR -->
+<div class="progress-container">
+<div class="progress-bar-custom" id="progress-{{ video.video_id }}"></div>
+</div>
+
+<div class="card-body">
+
+<h5 class="video-title video-search-title">
+{{ video.title }}
+</h5>
+
+<p class="video-description video-search-desc">
+{{ video.description }}
+</p>
+
+<div class="video-actions">
+
+<span class="badge category-badge">
+{{ video.category }}
+</span>
+
+<a href="{{ video.github }}" class="btn btn-sm github-btn" target="_blank">
+<i class="fab fa-github"></i> Code
+</a>
+
+<button class="btn btn-sm btn-warning"
+onclick="bookmarkVideo('{{ video.title }}','{{ video.link }}')">
+<i class="fa fa-bookmark"></i>
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+
+</div>
+
+</div>
+
+
+<!-- VIDEO MODAL -->
+
+<div class="modal fade" id="videoModal">
+<div class="modal-dialog modal-lg modal-dialog-centered">
+<div class="modal-content">
+<div class="modal-body">
+
+<button class="btn-close" data-bs-dismiss="modal"></button>
+
+<div class="ratio ratio-16x9">
+<div id="modalVideo"></div>
+</div>
+
+</div>
+</div>
+</div>
+</div>
+
+
+<!-- FOOTER -->
+
+<footer class="genz-footer">
+
+<div class="container">
+
+<div class="row gy-4">
+
+<div class="col-lg-4">
+
+<h3 class="footer-brand">EduWe</h3>
+
+<p class="footer-desc">
+EduWe helps learners explore modern technologies through curated
+tutorials in Cloud, AI/ML, DSA, Python, IoT and software development.
+</p>
+
+<div class="footer-social">
+
+<a href="#"><i class="fab fa-youtube"></i></a>
+<a href="#"><i class="fab fa-linkedin"></i></a>
+<a href="#"><i class="fab fa-github"></i></a>
+<a href="#"><i class="fab fa-twitter"></i></a>
+
+</div>
+
+</div>
+
+
+<div class="col-lg-2">
+
+<h6 class="footer-title">Explore</h6>
+
+<ul>
+<li><a href="#">Azure</a></li>
+<li><a href="#">AWS</a></li>
+<li><a href="#">AI/ML</a></li>
+<li><a href="#">Java</a></li>
+<li><a href="#">IoT</a></li>
+<li><a href="#">DSA</a></li>
+</ul>
+
+</div>
+
+
+<div class="col-lg-2">
+
+<h6 class="footer-title">Platform</h6>
+
+<ul>
+<li><a href="#">Courses</a></li>
+<li><a href="/learning-paths">Learning Paths</a></li>
+<li><a href="#">Community</a></li>
+<li><a href="/contact">Contact</a></li>
+</ul>
+
+</div>
+
+
+<div class="col-lg-4">
+
+<h6 class="footer-title">Stay Updated 🚀</h6>
+
+<p class="newsletter-text">
+Get latest tutorials and learning resources.
+</p>
+
+<div class="newsletter-box">
+
+<input type="email" id="newsletterEmail" placeholder="Enter your email">
+
+<button onclick="subscribeUser()">Subscribe</button>
+
+</div>
+
+</div>
+
+</div>
+
+<hr class="footer-line">
+
+<div class="footer-bottom">
+
+<p>© 2026 EduWe • Built for Future Learners</p>
+
+</div>
+
+</div>
+
+</footer>
+
+
+<!-- YOUTUBE API -->
+<script src="https://www.youtube.com/iframe_api"></script>
+
+
+<!-- PLAYER + PROGRESS -->
+
+<script>
+
+let player;
+let currentVideoId="";
+let progressInterval;
+
+function openVideo(videoId){
+
+currentVideoId = videoId;
+
+let progressData = JSON.parse(localStorage.getItem("videoProgress")) || {};
+let startTime = progressData[videoId] || 0;
+
+let modal = new bootstrap.Modal(document.getElementById("videoModal"));
+modal.show();
+
+setTimeout(() => {
+
+if(player){
+player.destroy();
+}
+
+player = new YT.Player('modalVideo', {
+videoId: videoId,
+playerVars: { autoplay: 1, start: Math.floor(startTime) },
+events: { 'onReady': onPlayerReady }
+});
+
+}, 500);
+
+}
+
+function onPlayerReady(){
+
+progressInterval = setInterval(() => {
+
+if(player && player.getCurrentTime){
+
+let progress = JSON.parse(localStorage.getItem("videoProgress")) || {};
+progress[currentVideoId] = player.getCurrentTime();
+
+localStorage.setItem("videoProgress", JSON.stringify(progress));
+
+}
+
+}, 2000);
+
+}
+
+document.getElementById('videoModal').addEventListener('hidden.bs.modal', function () {
+
+if(player){ player.destroy(); }
+clearInterval(progressInterval);
+
+});
+
+</script>
+
+
+<!-- CONTINUE WATCHING WITH PROGRESS -->
+
+<script>
+
+let progress = JSON.parse(localStorage.getItem("videoProgress")) || {};
+let container = document.getElementById("continueWatching");
+
+Object.keys(progress).forEach(videoId => {
+
+let percent = Math.min((progress[videoId] / 600) * 100, 100);
+
+container.innerHTML += `
+<div class="col-md-3 mb-3">
+<div class="card video-card">
+
+<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg">
+
+<div class="progress-container">
+<div class="progress-bar-custom" style="width:${percent}%"></div>
+</div>
+
+<div class="card-body text-center">
+<button class="btn btn-sm btn-primary"
+onclick="openVideo('${videoId}')">
+Resume ▶
+</button>
+</div>
+
+</div>
+</div>
+`;
+
+});
+
+</script>
+
+
+<!-- UPDATE MAIN CARDS PROGRESS -->
+
+<script>
+
+let pdata = JSON.parse(localStorage.getItem("videoProgress")) || {};
+
+Object.keys(pdata).forEach(videoId => {
+
+let percent = Math.min((pdata[videoId] / 600) * 100, 100);
+
+let bar = document.getElementById("progress-" + videoId);
+
+if(bar){
+bar.style.width = percent + "%";
+}
+
+});
+
+</script>
+
+
+<!-- CLOSE CONTINUE -->
+
+<script>
+
+function closeContinueWatching(){
+document.getElementById("continueSection").style.display="none";
+localStorage.setItem("hideContinue","true");
+}
+
+if(localStorage.getItem("hideContinue")==="true"){
+document.getElementById("continueSection").style.display="none";
+}
+
+</script>
+
+
+<!-- FILTER -->
+
+<script>
+
+function filterVideos(category){
+
+let videos = document.querySelectorAll(".video-item");
+let buttons = document.querySelectorAll(".filter-btn");
+
+// Filter logic
+videos.forEach(video => {
+
+let videoCategory = video.getAttribute("data-category");
+
+if(category === "all" || videoCategory === category){
+video.style.display = "block";
+}else{
+video.style.display = "none";
+}
+
+});
+
+// 🔥 Highlight active button
+buttons.forEach(btn => btn.classList.remove("active"));
+
+event.target.classList.add("active");
+
+}
+</script>
+
+<!-- SEARCH -->
+
+<script>
+function searchVideos(){
+let input=document.getElementById("videoSearch").value.toLowerCase();
+let videos=document.querySelectorAll(".video-item");
+
+videos.forEach(video=>{
+let title=video.querySelector(".video-search-title").innerText.toLowerCase();
+let desc=video.querySelector(".video-search-desc").innerText.toLowerCase();
+
+video.style.display=(title.includes(input)||desc.includes(input))?"block":"none";
+});
+}
+</script>
+
+
+<!-- BOOKMARK -->
+
+<script>
+function bookmarkVideo(title,link){
+
+let savedVideos=JSON.parse(localStorage.getItem("savedVideos"))||[];
+
+savedVideos.push({title:title,link:link});
+
+localStorage.setItem("savedVideos",JSON.stringify(savedVideos));
+
+alert("Saved to My Learning");
+
+}
+</script>
+
+<script>
+
+// 🧠 TRACK USER ACTIVITY
+function trackUserActivity(category){
+
+let activity = JSON.parse(localStorage.getItem("userActivity")) || [];
+
+activity.push(category);
+
+localStorage.setItem("userActivity", JSON.stringify(activity));
+
+}
+
+
+// 🧠 MODIFY OPEN VIDEO (overwrite existing)
+function openVideo(videoId, category){
+
+trackUserActivity(category); // 🔥 NEW
+
+currentVideoId = videoId;
+
+let progressData = JSON.parse(localStorage.getItem("videoProgress")) || {};
+let startTime = progressData[videoId] || 0;
+
+let modal = new bootstrap.Modal(document.getElementById("videoModal"));
+modal.show();
+
+setTimeout(() => {
+
+if(player){
+player.destroy();
+}
+
+player = new YT.Player('modalVideo', {
+videoId: videoId,
+playerVars: { autoplay: 1, start: Math.floor(startTime) },
+events: { 'onReady': onPlayerReady }
+});
+
+}, 500);
+
+}
+
+
+// 🧠 GET TOP CATEGORY
+function getTopCategory(){
+
+let activity = JSON.parse(localStorage.getItem("userActivity")) || [];
+
+if(activity.length === 0) return null;
+
+let count = {};
+
+activity.forEach(cat => {
+count[cat] = (count[cat] || 0) + 1;
+});
+
+return Object.keys(count).reduce((a, b) =>
+count[a] > count[b] ? a : b
+);
+
+}
+
+
+// 🎯 LOAD RECOMMENDATIONS
+function loadRecommendations(){
+
+let topCategory = getTopCategory();
+
+if(!topCategory) return;
+
+let container = document.getElementById("recommendedVideos");
+
+let allVideos = document.querySelectorAll(".video-item");
+
+let shown = 0;
+
+allVideos.forEach(video => {
+
+let category = video.getAttribute("data-category");
+
+if(category === topCategory && shown < 3){
+
+let clone = video.cloneNode(true);
+
+container.appendChild(clone);
+
+shown++;
+
+}
+
+});
+
+}
+
+document.addEventListener("DOMContentLoaded", loadRecommendations);
+
+</script>
+
+<script>
+
+function subscribeUser(){
+
+let email = document.getElementById("newsletterEmail").value.trim();
+
+if(email === ""){
+alert("Please enter email");
+return;
+}
+
+// simple email validation
+if(!email.includes("@") || !email.includes(".")){
+alert("Enter valid email");
+return;
+}
+
+// store emails
+let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
+
+if(subscribers.includes(email)){
+alert("Already subscribed");
+return;
+}
+
+subscribers.push(email);
+
+localStorage.setItem("subscribers", JSON.stringify(subscribers));
+
+alert("🎉 Subscribed successfully!");
+
+document.getElementById("newsletterEmail").value = "";
+
+}
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
