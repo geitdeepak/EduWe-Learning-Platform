@@ -95,5 +95,8 @@ def yt_channel():
 def contact():
     return render_template("contact.html")
 
+import os
+
 if __name__ == "__main__":
-    app.run(port=5002, debug=True)
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port)
